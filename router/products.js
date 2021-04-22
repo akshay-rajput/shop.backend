@@ -3,7 +3,7 @@ let router = express.Router();
 
 // middleware for products
 router.use(function(req, res, next){
-    console.log('Use product router middleware: ', Date.now())
+    console.log('Use product router middleware: '+ req.method + ' -- '+ Date.now())
     next()
 })
 
