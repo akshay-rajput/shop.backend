@@ -41,7 +41,7 @@ router.route('/')
                 })
             }
             catch(err){
-                res.status(502).json({
+                res.status(400).json({
                     success: false,
                     message: "Cannot get list of carts, check your request",
                     error: err
@@ -91,7 +91,7 @@ router.route('/')
                 cart: cartToSave
             })
         }catch(err){
-            res.status(502).json({
+            res.status(400).json({
                 success: false,
                 message: "Error while creating cart",
                 error: err
