@@ -1,60 +1,113 @@
 let express = require('express');
+const { Product } = require('../models/product.model');
+const {extend} = require('lodash')
 let router = express.Router();
 
 // middleware for products
 router.use(function(req, res, next){
-    console.log('Use product router middleware: '+ req.method + ' -- '+ Date.now())
+    console.log('product router: '+ req.method + ' -- '+ Date())
     next()
 })
 
 // products route
 router.route('/')
-.get(function(req, res){
-    res.send('sending product list...')
-}).post(function(req, res){
-    // const { name, price } = req.body
-    console.log('reqBody: ', req.body)
-    res.send(req.body)
-    // This will happen on DB
-    // const product = { id: idCounter++, name, price }
-    // products.push(product)
+.get(async function(req, res){
+    try{
+        const productList = await Product.find({})
 
-    // Sucess will be returned
-    // res.status(201).json({ success: true, product })
-    // res.send('product added')
+        res.status(500).json({
+            success: true,
+            products: productList
+        })
+        
+    }catch(error){
+        res.status(500).json({
+            success: false,
+            error,
+            message: 'Cannot get products'
+        })
+    }
+
+}).post(async function(req, res){
+    try{
+        const product = req.body
+        const newProduct = new Product(product);
+        const savedProduct = await newProduct.save()
+
+        res.status(200).json({
+            success: true,
+            product: savedProduct
+        })
+    }catch(error){
+        res.status(500).json({
+            success: false,
+            error,
+            message: 'Cannot add product'
+        })
+    }
+})
+
+// middleware for RUD ops for single product
+router.param("productId", async (req, res, next, productId) => {
+    try{
+        const product = await Product.findById(productId)
+
+        if(!product){
+            return res.status(404).json({
+                success: false,
+                message: "Product not found"
+            })
+        }
+
+        // set product inside req object to use below 
+        req.product = product;
+        next();
+    }
+    catch(error){
+        res.status(400).json({
+            success: false,
+            error,
+            message: "Error getting product, please check your request"
+        })
+    }
 })
 
 // single product
 router.route('/:productId')
 .get((req, res) => {
-    const { productId } = req.params
-    // console.log( ' getting-> ', productId)
-    // const product = products.find(product => product.id === parseInt(id, 10))
-    res.send(productId)
-    // if (product) {
-    //   return res.json({ product, success: true })
-    // } 
-    // res.status(404).json({ success: false, message: "The product ID sent has no product associated with it. Check and try again"})
-  })
-.post((req, res) => {
-    const { productId } = req.params
-    const updateProduct = req
-    console.log('product to update: ', productId + '\n ', req.body)
-    // res.send(updateProduct)
-    // Temp code, will be replaced by DB
-    // products.forEach(product => {
-    //   if (product.id === parseInt(id, 10)) { // match
-    //     Object.keys(updateProduct).forEach(key => {
-    //     if (key in product) {
-    //       product[key] = updateProduct[key]
-    //     }
-    //    })
-    //   }
-    // })
-  
-    // res.json({ products, success: true })
+    // take product out of req object
+    let {product} = req
+
+    res.json({
+        success: true,
+        product: product
+    })
+    
+})
+.post(async (req, res) => {
+    // the product date passed by client
+    const productUpdate = req.body
+
+    // the product which was found by id
+    let {product} = req
+
+    product = extend(product, productUpdate)
+
+    product = await product.save()
+
+    res.json({
+        success: true,
+        product
+    })
+})
+.delete(async (req, res) => {
+    let {product} = req
+    await product.remove()
+    res.json({
+        success: true,
+        deleted: true,
+        product
+    })
 })
 
-.delete((req, res) =>  res.json({ success: false, message: "delete not implemented"}))
-  
 module.exports = router;
