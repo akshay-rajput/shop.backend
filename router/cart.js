@@ -1,5 +1,7 @@
 let express = require('express');
 let router = express.Router();
+const { Cart } = require('../models/cart.model');
+const {extend} = require('lodash')
 
 // middleware for cart
 router.use(function(req, res, next){
@@ -9,38 +11,93 @@ router.use(function(req, res, next){
 
 // cart route
 router.route('/')
-.get(function(req, res){
+.get(async function(req, res){
     try{
-        res.json({
-            success: true, 
-            message: 'Cart found'
-        })
+        // if cart id given, give cart else give list of carts
+        if(req.headers.cartId){
+            try{
+                let cart = await Cart.findById(req.headers.cartId)
+            
+                res.status(200).json({
+                    success: true, 
+                    message: 'User Cart found',
+                    cart
+                })
+            }
+            catch(err){
+                res.status(404).json({
+                    success: false, 
+                    message: 'Cart not found',
+                })
+            }
+        }else{
+            try{
+                let cartList = await Cart.find({})
+            
+                res.status(200).json({
+                    success: true, 
+                    message: 'Showing list of carts',
+                    carts
+                })
+            }
+            catch(err){
+                res.status(502).json({
+                    success: false,
+                    message: "Cannot get list of carts, check your request",
+                    error: err
+                })
+            }
+        }
+        
     }catch(error){
-        console.log('Error getting cart ', error)
         res.status(500).json({
             success: false,
             message: 'Server error',
-            errorMessage: error.message
+            errorMessage: error
         })
     }
 
-}).post(function(req, res){
-    // const { name, price } = req.body
-    try{
-        console.log('reqBody: ', req.body)
-        res.status(201).json({ success: true, message: 'cart updated' })
-        res.send('cart updated')
-    }catch(error){
-        console.log('Error updating cart ', error)
-        res.status(500).json({
-            success: false,
-            message: 'Server error updating the cart',
-            errorMessage: error.message
-        })
+}).post(async function(req, res){
+    if(req.headers.cartId){
+        const cartUpdate = req.body
+        try{
+            let cart = await Cart.findById(req.headers.cartId)
+
+            cart = extend(cart, cartUpdate)
+
+            cart = await cart.save()
+
+            req.status(204).json({
+                success: true,
+                message: "Cart updated successfully!",
+                cart
+            })
+        }catch(error){
+            req.status(404).json({
+                success: false,
+                message: "Cart not found!",
+                error: error
+            })
+        }
     }
-    // This will happen on DB
-    // const product = { id: idCounter++, name, price }
-    // products.push(product)
+    else{
+        try{
+            let cartToSave = req.body
+            cartToSave = await cartToSave.save()
+
+            res.status(204).json({
+                success: true,
+                message: "Cart created",
+                cart: cartToSave
+            })
+        }catch(err){
+            res.status(502).json({
+                success: false,
+                message: "Error while creating cart",
+                error: err
+            })
+        }
+    }
 
 })
 
