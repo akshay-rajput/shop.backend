@@ -4,10 +4,10 @@ const {extend} = require('lodash')
 let router = express.Router();
 
 // middleware for products
-router.use(function(req, res, next){
-    console.log('product router: '+ req.method + ' -- '+ Date())
-    next()
-})
+// router.use(function(req, res, next){
+//     console.log('product router: '+ req.method + ' -- '+ Date())
+//     next()
+// })
 
 // products route
 router.route('/')
@@ -15,7 +15,7 @@ router.route('/')
     try{
         const productList = await Product.find({})
 
-        res.status(500).json({
+        res.status(200).json({
             success: true,
             products: productList
         })
