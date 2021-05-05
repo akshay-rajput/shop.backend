@@ -8,6 +8,8 @@ const errorHandler = require('./middleware/errorHandler')
 const productsRouter = require('./router/products')
 const cartRouter = require('./router/cart')
 const wishlistRouter = require('./router/wishlist')
+const usersRouter = require('./router/users')
+
 
 const port = 8000;
 
@@ -24,9 +26,10 @@ connectDB()
 app.use('/products', productsRouter)
 app.use('/cart', cartRouter)
 app.use('/wishlist', wishlistRouter)
+app.use('/users', usersRouter)
 
 app.get('/', (req, res) => {
-  res.send('API for Shop.Wisp')
+  res.send('API page for Shop.Wisp')
   // console.count('\naccessed homepage ')
 });
 
