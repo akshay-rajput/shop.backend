@@ -20,7 +20,8 @@ const productSchema = new Schema({
     },
     description: {
         type: String,
-        minLength: [10, "Description should be more than 10 character long"] 
+        // required: false,
+        // minLength: [10, "Description should be more than 10 character long"],
     },
     link: {
         type: mongoose.SchemaTypes.Url,
