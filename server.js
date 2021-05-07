@@ -1,4 +1,5 @@
 const express = require('express')
+const cors = require('cors');
 const app = express();
 const { connectDB } = require('./db/db') 
 const requestLog = require('./middleware/requestLog')
@@ -15,6 +16,15 @@ const port = 8000;
 
 // to parse json from req.body
 app.use(express.json())
+
+app.use(cors());
+// cors
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "https://shop-wisp.netlify.app");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  next();
+});
 
 // log requests
 app.use(requestLog)
