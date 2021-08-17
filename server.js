@@ -10,6 +10,7 @@ const productsRouter = require('./router/products')
 const cartRouter = require('./router/cart')
 const wishlistRouter = require('./router/wishlist')
 const usersRouter = require('./router/users')
+const paymentsRouter = require('./router/payments')
 
 
 const port = 8000;
@@ -37,6 +38,7 @@ app.use('/products', productsRouter)
 app.use('/cart', cartRouter)
 app.use('/wishlist', wishlistRouter)
 app.use('/users', usersRouter)
+app.use('/payments', paymentsRouter);
 
 app.get('/', (req, res) => {
   res.send('API page for Shop.Wisp')
