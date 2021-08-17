@@ -31,7 +31,9 @@ router.route('/')
 }).post(async function(req, res){
     try{
         const product = req.body
+        console.log('product: ', product)
         const newProduct = new Product(product);
+        console.log('newProduct is : ', newProduct)
         const savedProduct = await newProduct.save()
 
         res.status(200).json({
@@ -39,10 +41,11 @@ router.route('/')
             product: savedProduct
         })
     }catch(error){
+        console.log('\n error:', error + '\n')
         res.status(500).json({
             success: false,
-            error,
-            message: 'Cannot add product'
+            message: 'Cannot add product',
+            error: error
         })
     }
 })
