@@ -1,36 +1,55 @@
 const express = require('express')
+const cors = require('cors');
 const app = express();
-// const bodyParser = require('body-parser')
-// app.use(bodyParser.json());
+const { connectDB } = require('./db/db') 
+const requestLog = require('./middleware/requestLog')
+const pageNotFound = require('./middleware/pageNotFound')
+const errorHandler = require('./middleware/errorHandler')
 
-const products = require('./router/products')
+const productsRouter = require('./router/products')
+const cartRouter = require('./router/cart')
+const wishlistRouter = require('./router/wishlist')
+const usersRouter = require('./router/users')
+const paymentsRouter = require('./router/payments')
+
+
 const port = 8000;
 
-app.use('/products', products)
+// to parse json from req.body
+app.use(express.json())
+
+app.use(cors());
+// cors
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "https://shop-wisp.netlify.app");
+  res.header("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT,DELETE");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+  next();
+});
+
+// log requests
+app.use(requestLog)
+
+// db connection call
+connectDB()
+
+// route handlers
+app.use('/products', productsRouter)
+app.use('/cart', cartRouter)
+app.use('/wishlist', wishlistRouter)
+app.use('/users', usersRouter)
+app.use('/payments', paymentsRouter);
 
 app.get('/', (req, res) => {
-  res.send('Hello World!')
-  console.count('\naccessed homepage ')
+  res.send('API page for Shop.Wisp')
+  // console.count('\naccessed homepage ')
 });
 
-app.get('/cart', (req, res) => {
-  res.send('cart for..')
-});
-app.get('/wishlist', (req, res) => {
-  res.send('wishlist for ..')
-});
-
-// this should be the last route so it catches
-// any other route which isn't expected
-app.use((req, res) => {
-  res.status(404).json({ success: false, message: "the route you're looking for couldn't be found" })
-})
+// this should be the last route so it catches any other route which isn't expected
+app.use(pageNotFound)
 
 // handle all errors here
-app.use(function (err, req, res, next) {
-  console.error(err.stack)
-  res.status(500).send('Error on server side')
-})
+app.use(errorHandler)
 
 
 app.listen(process.env.PORT || port, () => {
